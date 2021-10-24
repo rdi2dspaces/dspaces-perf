@@ -151,6 +151,25 @@ double **init_buffers(struct arguments *opts)
     return (buffers);
 }
 
+char **init_vars(dspaces_client_t ds, struct arguments *opts)
+{
+    char (*var_names)[128];
+    uint64_t gdim[opts->ndim];
+    int i;
+
+    for(i = 0; i < opts->ndim; i++) {
+        gdim[i] = opts->rank_dims[i] * opts->data_dims[i];
+    }
+
+    var_names = malloc(sizeof(*var_names) * opts->nput);
+    for(i = 0; i < opts->nput; i++) {
+        sprintf(var_names[i], "put_var_%i", i);
+        dspaces_define_gdim(ds, var_names[i], opts->ndim, gdim);
+    }
+
+    return((char **)var_names);
+}
+
 void set_bounds(struct arguments *opts, int rank, uint64_t **lb, uint64_t **ub)
 {
     int rank_pos;
@@ -176,7 +195,7 @@ int main(int argc, char **argv)
     dspaces_put_req_t *reqs;
     double **buffers;
     uint64_t *ub, *lb;
-    char(*var_names)[128];
+    char **var_names;
     int num_iter;
     int i, j;
 
@@ -194,10 +213,7 @@ int main(int argc, char **argv)
     reqs = malloc(sizeof(*reqs) * opts.nput);
     buffers = init_buffers(&opts);
     set_bounds(&opts, rank, &lb, &ub);
-    var_names = malloc(sizeof(*var_names) * opts.nput);
-    for(i = 0; i < opts.nput; i++) {
-        sprintf(var_names[i], "put_var_%i", i);
-    }
+    var_names = init_vars(ds, &opts);
 
     apex_init("fast put", rank, comm_size);
     APEX_NAME_TIMER_START(1, "dspaces_init");
