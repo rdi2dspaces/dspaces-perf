@@ -153,7 +153,8 @@ double **init_buffers(struct arguments *opts)
 
 char **init_vars(dspaces_client_t ds, struct arguments *opts)
 {
-    char (*var_names)[128];
+    char **var_names;
+    char *var_name_buf;
     uint64_t gdim[opts->ndim];
     int i;
 
@@ -161,13 +162,18 @@ char **init_vars(dspaces_client_t ds, struct arguments *opts)
         gdim[i] = opts->rank_dims[i] * opts->data_dims[i];
     }
 
+    var_name_buf = malloc(sizeof(*var_name_buf) * 128 * opts->nput);
+    var_names = malloc(sizeof(*var_names) * opts->nput);
+    for(i = 0; i < opts->nput; i++) {
+        var_names[i] = &var_name_buf[128 * i];
+    }
     var_names = malloc(sizeof(*var_names) * opts->nput);
     for(i = 0; i < opts->nput; i++) {
         sprintf(var_names[i], "put_var_%i", i);
         dspaces_define_gdim(ds, var_names[i], opts->ndim, gdim);
     }
 
-    return((char **)var_names);
+    return(var_names);
 }
 
 void set_bounds(struct arguments *opts, int rank, uint64_t **lb, uint64_t **ub)
@@ -253,6 +259,7 @@ int main(int argc, char **argv)
     }
     free(buffers);
     free(reqs);
+    free(var_names[0]);
     free(var_names);
     free(opts.rank_dims);
     free(opts.data_dims);
