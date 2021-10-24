@@ -213,12 +213,13 @@ int main(int argc, char **argv)
     reqs = malloc(sizeof(*reqs) * opts.nput);
     buffers = init_buffers(&opts);
     set_bounds(&opts, rank, &lb, &ub);
-    var_names = init_vars(ds, &opts);
 
     apex_init("fast put", rank, comm_size);
     APEX_NAME_TIMER_START(1, "dspaces_init");
     dspaces_init_mpi(comm, &ds);
     APEX_TIMER_STOP(1);
+
+    var_names = init_vars(ds, &opts);
 
     for(i = 0; i < opts.steps; i++) {
         APEX_NAME_TIMER_START(2, "do_iputs");
