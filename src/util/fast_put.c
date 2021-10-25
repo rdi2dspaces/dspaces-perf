@@ -167,7 +167,6 @@ char **init_vars(dspaces_client_t ds, struct arguments *opts)
     for(i = 0; i < opts->nput; i++) {
         var_names[i] = &var_name_buf[128 * i];
     }
-    var_names = malloc(sizeof(*var_names) * opts->nput);
     for(i = 0; i < opts->nput; i++) {
         sprintf(var_names[i], "put_var_%i", i);
         dspaces_define_gdim(ds, var_names[i], opts->ndim, gdim);
@@ -242,6 +241,7 @@ int main(int argc, char **argv)
         APEX_TIMER_STOP(3);
     }
 
+    MPI_Barrier(comm);
     if(rank == 0) {
         dspaces_kill(ds);
     }
