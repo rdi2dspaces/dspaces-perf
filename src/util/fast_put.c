@@ -227,6 +227,7 @@ int main(int argc, char **argv)
     var_names = init_vars(ds, &opts);
 
     for(i = 0; i < opts.steps; i++) {
+        MPI_Barrier(comm);
         APEX_NAME_TIMER_START(2, "do_iputs");
         for(j = 0; j < opts.nput; j++) {
             reqs[j] = dspaces_iput(ds, var_names[j], i, sizeof(**buffers),
